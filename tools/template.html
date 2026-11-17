@@ -296,18 +296,27 @@ function renderWeek(m){
      <div class="panel"><div class="row" style="justify-content:space-between;margin-bottom:6px"><h2 style="margin:0">Priorities this week</h2><button class="btn" id="cpon">Copy for OneNote</button></div>
        ${TIERS.map(([k,l,sub])=>(PR[k]||[]).length?`<div class="tier tier-${k}"><div class="tierhead"><span class="tiername">${l}</span><span class="muted">${sub}</span></div><ul class="todo">${PR[k].map(pItem).join("")}</ul></div>`:"").join("")}
        <div class="small-note">Tick these off in OneNote, not here. Send the week's OneNote page at the Friday check-in and Claude updates this.</div></div>
-     ${(W.ellis||[]).length?`<div class="panel"><h2>Ellis this week</h2><ul class="todo">${W.ellis.map(pItem).join("")}</ul></div>`:""}
+     ${(W.added||[]).length?`<div class="panel"><h2>New this week</h2><ul class="todo">${W.added.map(pItem).join("")}</ul></div>`:""}
+     <div class="panel"><h2>Ellis this week</h2>${(W.ellis||[]).length?`<ul class="todo">${W.ellis.map(pItem).join("")}</ul>`:""}<div class="small-note">${esc(W.ellisNote||"Confirmed after the Monday 10:00 catch-up.")}</div></div>
      </div>
      <div style="display:grid;gap:16px">
+       <div class="panel"><h2>For George</h2>${(W.george||[]).length?`<ul class="todo">${W.george.map(pItem).join("")}</ul>`:'<div class="empty">Nothing yet. Say "for George" at any point in the week.</div>'}</div>
+       <div class="panel"><h2>Energy Services weekly</h2>${(W.esweekly||[]).length?`<ul class="todo">${W.esweekly.map(pItem).join("")}</ul>`:`<div class="empty">${esc(W.esNote||"Points arrive with the Monday plan, before 8:30.")}</div>`}</div>
+       <div class="panel"><h2>Super 6</h2><p style="margin:0">${esc(W.super6||"Anyone done good this week? Submit a Super 6 nomination.")}</p></div>
        <div class="panel"><h2>Needs attention</h2>${attention.length?`<div class="list">${attention.map(p=>`<div class="it" data-open="${p.id}"><span class="when">${esc(p.id)}</span><span><span class="ttl">${esc(p.title)}</span><small>${esc(p.flag||"")}</small></span>${isBlocked(p)?'<span class="pill alert">Blocked</span>':ragPill(p.rag)}</div>`).join("")}</div>`:'<div class="empty">Nothing blocked or red.</div>'}</div>
        <div class="panel"><h2>Coming up</h2>${upcoming.length?`<div class="list">${upcoming.map(p=>{const n=daysTo(p.due);return `<div class="it" data-open="${p.id}"><span class="when">${esc(fmt(p.due))}</span><span><span class="ttl">${esc(p.title)}</span><small>${esc(p.id)} · ${esc(p.owner||"")}</small></span><span class="days-left ${n<=7?"soon":""}">${n<0?`${-n}d ago`:n===0?"today":`${n}d`}</span></div>`}).join("")}</div>`:'<div class="empty">No dated items in the next six weeks.</div>'}</div>
      </div>
    </div></section>`;
   const cp=m.querySelector("#cpon");
   if(cp)cp.onclick=()=>{
-    const lines=[];
-    TIERS.forEach(([k,l])=>{const xs=(PR[k]||[]).filter(x=>!x.done);if(xs.length){lines.push(l);xs.forEach(x=>lines.push(x.text+(x.pid?` (${x.pid})`:"")));lines.push("")}});
-    if((W.ellis||[]).length){lines.push("Ellis this week");W.ellis.filter(x=>!x.done).forEach(x=>lines.push(x.text));}
+    const lines=[],sec=(h,xs)=>{xs=(xs||[]).filter(x=>!x.done);if(xs.length){lines.push(h);xs.forEach(x=>lines.push(x.text));lines.push("")}};
+    lines.push("Tasks at start of the week");
+    TIERS.forEach(([k,l])=>{const xs=(PR[k]||[]).filter(x=>!x.done);if(xs.length){xs.forEach(x=>lines.push(`[${l}] ${x.text}`))}});
+    lines.push("");
+    sec("Ellis work this week",W.ellis);
+    sec("GW catch-up",W.george);
+    sec("ES Weekly",W.esweekly);
+    lines.push("Super 6");lines.push(W.super6||"Anyone done good this week? Submit a nomination.");
     copy(lines.join("\n").trim());
   };
   wireOpen(m);
@@ -393,7 +402,8 @@ function briefGeorge(){
   const help=D.projects.filter(p=>ACTIVE.includes(p.status)&&(isBlocked(p)||p.rag==="Red"));
   const due=D.projects.filter(p=>p.due&&ACTIVE.includes(p.status)&&daysTo(p.due)>=0&&daysTo(p.due)<=21).sort((a,b)=>a.due.localeCompare(b.due));
   return {title:`Update for George`,sub:`Since ${fmtLong(s)}`,sections:[
-    ["Wins",wins.map(w=>`${w.title}. ${w.impact||""}`)],
+    ["Points to raise",((D.week&&D.week.george)||[]).filter(x=>!x.done).map(x=>x.text)],
+    ["Wins",wins.map(w=>`${w.title}. ${w.impact||""}${w.evidence?` (${w.evidence})`:""}`)],
     ["Progress",moved.map(p=>`${p.title}: ${latest(p).text}`)],
     ["Blocked or needs support",help.map(p=>`${p.title} (${p.flag||p.rag}). ${p.next||""}`)],
     ["Coming up (next 3 weeks)",due.map(p=>`${fmtLong(p.due)} – ${p.title}`)]]};

@@ -16,7 +16,8 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 
 ## Data shape (tracker.json)
 - `meta.updated` – date of the last check-in.
-- `week` – `label`, `days[{date, items[], note}]`, `priorities{must,should,iftime}[{text,pid,done}]`, `ellis[{text,pid,done}]`.
+- `week` – `label`, `days[{date, items[], note}]`, `priorities{must,should,iftime}[{text,pid,done}]`, `added[]` (new tasks mid-week), `ellis[]` + `ellisNote`, `george[]` (GW catch-up points), `esweekly[]` + `esNote` (Energy Services weekly, Mon 8:30), `super6` (weekly reminder text). List items are `{text,pid,done}`.
+- Copy for OneNote follows the owner's OneNote order: Tasks at start of the week, Ellis work this week, GW catch-up, ES Weekly, Super 6.
 - `projects[]` – `id, theme, title, detail, status, rag, flag, owner, due, next, why, decision, updates[{date,status,text}]` (newest first).
 - `wins[]` – `date (YYYY-MM or YYYY-MM-DD), title, impact, evidence|null, who (Ella|Ellis|Team), pid`.
 
@@ -25,3 +26,9 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 - Never tick tasks for the owner from guesswork: completions come from her Friday OneNote screenshot or what she says.
 - Unticked OneNote items carry forward into next week's priorities.
 - Every completed milestone is a candidate win: log impact, and ask for evidence when missing.
+
+## Weekly rhythm
+- Monday before 8:30: Monday plan – diary, deadlines, what's new. Output: tiered priorities, ES Weekly points, GW catch-up points, proposed asks for Ellis.
+- Monday after the 10:00 Ellis catch-up: Ellis's rundown updates `week.ellis`.
+- Any time: "for George …" adds to `week.george`; new projects get added. Ordinary new tasks stay in OneNote.
+- Friday: OneNote screenshot + narrative + wins + next week's knowns. Output: updates, wins, carry-forwards, draft next week.
