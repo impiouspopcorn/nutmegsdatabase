@@ -5,7 +5,7 @@ The plaintext data is never stored here. The master data lives in the owner's pr
 Claude artifact (file `data/tracker.json`); its link is in the owner's project instructions.
 
 ## Rebuild after a check-in
-1. Read `data/tracker.json` from the private artifact and apply the agreed changes.
+1. Read `data/tracker.json` from the private artifact. Then read the artifact's database collection `overrides` (one doc per project ID with any of `theme`, `rag`, `status`, `owner`, plus `at`): these are edits the owner made on the page. Apply them to tracker.json, add a dated update line noting the change, then delete those override docs. Then apply the agreed check-in changes.
 2. Put the data at `<work>/data/tracker.json`, copy `tools/template.html` and `tools/build.py`
    to `<work>/src/`, and `keys/*` to `<work>/keys/`.
 3. `python3 <work>/src/build.py <work>` writes `dist/private/index.html` (plain) and

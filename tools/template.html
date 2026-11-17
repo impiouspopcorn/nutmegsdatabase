@@ -128,6 +128,9 @@ dialog.sheet{border:0;padding:0;margin:0 0 0 auto;height:100%;max-height:100%;wi
 dialog.sheet::backdrop{background:rgba(10,20,16,.35)}
 .sheet .inner{padding:20px max(20px,env(safe-area-inset-right,0px)) 40px 20px;display:grid;gap:16px;overflow-y:auto;height:100%}
 .sheet h2{font-size:22px}
+.editgrid{display:grid;grid-template-columns:80px minmax(0,1fr);gap:8px 10px;align-items:center}
+.editgrid select,.editgrid input{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 9px;width:100%}
+.edit{background:var(--sunk);border-radius:var(--r);padding:12px}
 .kv{display:grid;grid-template-columns:110px 1fr;gap:6px 12px;font-size:13px}
 .kv dt{color:var(--muted)} .kv dd{margin:0}
 .block h4{margin:0 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
@@ -244,11 +247,30 @@ const latest=p=>(p.updates&&p.updates[0])||null;
 const isBlocked=p=>/block/i.test(p.flag||"");
 const ragPill=r=>`<span class="pill rag-${esc(r)}"><span class="dot"></span>${esc(r||"Not rated")}</span>`;
 
+let DB=null,OVR={};
+const RAGS=["Red","Amber","Green","Grey","Not rated"],STATUSES=["Not started","In progress","Ongoing (BAU)","Parked","Backlog","Stopped","Complete"];
+function applyOverrides(){D.projects.forEach(p=>{Object.assign(p,p._base);const o=OVR[p.id];if(o)["theme","rag","status","owner"].forEach(k=>{if(o[k]!=null&&o[k]!=="")p[k]=o[k]})})}
+function editForm(p){
+  const opt=(arr,v)=>arr.map(x=>`<option ${x===v?"selected":""}>${esc(x)}</option>`).join("");
+  return `<div class="block edit"><h4>Edit</h4>
+   <div class="editgrid">
+    <label for="e-pillar">Pillar</label><select id="e-pillar">${opt(PILLARS,p.theme)}</select>
+    <label for="e-rag">RAG</label><select id="e-rag">${opt(RAGS,p.rag)}</select>
+    <label for="e-status">Status</label><select id="e-status">${opt(STATUSES,p.status)}</select>
+    <label for="e-owner">Owner</label><input id="e-owner" type="text" value="${esc(p.owner||"")}">
+   </div>
+   <div class="row" style="margin-top:10px"><button class="btn" id="e-save">Save</button>${OVR[p.id]?'<button class="btn ghost" id="e-undo">Undo my edits</button>':""}</div>
+   <p class="small-note">${OVR[p.id]?"Edited here. ":""}Saved edits show here straight away and reach the laptop copy at the next check-in.</p></div>`;
+}
 function start(data){
   D=data;D.projects.forEach(p=>P[p.id]=p);
   const s=new Date(today());s.setDate(s.getDate()-14);state.since=iso(s);state.month=iso(today()).slice(0,7);
   const h=(location.hash||"").slice(1);if(["week","projects","wins","briefs"].includes(h))state.view=h;
   shell();render();
+  D.projects.forEach(p=>p._base={theme:p.theme,rag:p.rag,status:p.status,owner:p.owner});
+  if(BOOT.mode==="plain"&&window.claude&&claude.use){claude.use("db").then(db=>{if(!db)return;DB=db;
+    db.collection("overrides").onSnapshot(snap=>{OVR={};snap.docs.forEach(d=>OVR[d.id]=d.data()||{});applyOverrides();render();
+      const sh=document.getElementById("sheet");if(sh&&sh.open&&sh.dataset.pid)openProject(sh.dataset.pid)},()=>{})}).catch(()=>{})}
   window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["week","projects","wins","briefs"].includes(v)){state.view=v;render()}});
 }
 function shell(){
@@ -346,7 +368,7 @@ function renderProjects(m){
     const c=document.getElementById("cards");
     c.innerHTML=list.length?list.map(p=>{const u=latest(p);return `<button class="card ${p.status==="Complete"?"complete":""}" data-open="${p.id}">
       <div class="head"><span class="mono muted">${esc(p.id)} · ${esc(p.theme||"")}</span>${ragPill(p.rag)}</div>
-      <h3>${esc(p.title)}</h3>
+      <h3>${esc(p.title)}${OVR[p.id]?' <span class="pill acc">Edited</span>':""}</h3>
       <div class="row"><span class="pill ${p.status==="Complete"?"acc":""}">${esc(p.status)}</span>${p.due?`<span class="pill">Due ${esc(fmt(p.due))}</span>`:""}${isBlocked(p)?'<span class="pill alert">Blocked</span>':""}</div>
       ${p.flag&&!isBlocked(p)?`<div class="flag">${esc(p.flag)}</div>`:""}
       ${u?`<div class="latest"><span class="mono">${esc(fmt(u.date))}</span> ${esc(u.text)}</div>`:""}
@@ -360,12 +382,13 @@ function renderProjects(m){
   m.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{const r=b.dataset.r;state.rags.has(r)?state.rags.delete(r):state.rags.add(r);b.setAttribute("aria-pressed",state.rags.has(r));draw()});
 }
 function openProject(id){
-  const p=P[id];if(!p)return;const s=document.getElementById("sheet");
+  const p=P[id];if(!p)return;const s=document.getElementById("sheet");s.dataset.pid=id;
   const wins=D.wins.filter(w=>w.pid===id);
   s.innerHTML=`<div class="inner">
    <div class="row" style="justify-content:space-between"><span class="mono muted">${esc(p.id)} · ${esc(p.theme||"")}</span><button class="iconbtn" id="cls">Close</button></div>
    <h2>${esc(p.title)}</h2>
    <div class="row">${ragPill(p.rag)}<span class="pill">${esc(p.status)}</span>${isBlocked(p)?'<span class="pill alert">Blocked</span>':""}</div>
+   ${DB?editForm(p):(BOOT.mode!=="plain"?'<p class="small-note">To edit pillar, RAG, status or owner, open Nutmeg on your iPad.</p>':"")}
    <dl class="kv"><dt>Owner</dt><dd>${esc(p.owner||"–")}</dd><dt>Due</dt><dd>${p.due?esc(fmtLong(p.due)):"–"}</dd><dt>Issue flag</dt><dd>${esc(p.flag||"–")}</dd><dt>Decision</dt><dd>${esc(p.decision||"–")}</dd></dl>
    ${p.detail?`<div class="block"><h4>Scope</h4><p>${esc(p.detail)}</p></div>`:""}
    ${p.next?`<div class="block"><h4>Next steps</h4><p>${esc(p.next)}</p></div>`:""}
@@ -374,6 +397,11 @@ function openProject(id){
    <div class="block"><h4>Updates</h4><ul class="timeline">${(p.updates||[]).map(u=>`<li><div class="when">${esc(fmtLong(u.date))}${u.status?` · ${esc(u.status)}`:""}</div><div>${esc(u.text)}</div></li>`).join("")}</ul></div>
   </div>`;
   s.querySelector("#cls").onclick=()=>s.close();
+  const sv=s.querySelector("#e-save");
+  if(sv)sv.onclick=async()=>{const vals={theme:s.querySelector("#e-pillar").value,rag:s.querySelector("#e-rag").value,status:s.querySelector("#e-status").value,owner:s.querySelector("#e-owner").value.trim(),at:new Date().toISOString()};
+    sv.disabled=true;try{await DB.doc("overrides/"+id).set(vals);toast("Saved")}catch(e){toast("Couldn't save. Try again.");sv.disabled=false}};
+  const un=s.querySelector("#e-undo");
+  if(un)un.onclick=async()=>{try{await DB.doc("overrides/"+id).delete();toast("Edits removed")}catch(e){toast("Couldn't undo. Try again.")}};
   if(!s.open){try{s.showModal()}catch(e){s.setAttribute("open","")}}
 }
 
