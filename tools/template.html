@@ -80,7 +80,13 @@ section.view{display:grid;gap:22px}
 .todo li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:9px 0;border-bottom:1px solid var(--line)}
 .todo li:last-child{border-bottom:0}
 .todo input{width:18px;height:18px;margin-top:2px;accent-color:var(--accent)}
-.todo li.done .t{text-decoration:line-through;color:var(--muted)}
+.todo li.done .t{color:var(--muted)}
+.todo .mark{width:14px;height:14px;margin-top:4px;border:1.5px solid var(--muted);border-radius:50%;display:grid;place-items:center;font-size:12px;color:var(--accent-ink)}
+.todo li.done .mark{background:var(--accent);border-color:var(--accent)}
+.tier + .tier{margin-top:14px}
+.tierhead{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding-bottom:4px;border-bottom:2px solid var(--line)}
+.tiername{font-family:var(--f-display);font-weight:700;font-size:15px}
+.tier-must .tierhead{border-bottom-color:var(--accent)}
 .todo .tag{font-size:11px;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
 .linkid{border:0;background:none;padding:0;cursor:pointer;color:var(--accent);font-family:var(--f-mono);font-size:12px}
 .list{display:grid;gap:0}
@@ -274,29 +280,36 @@ function wireOpen(root){root.querySelectorAll("[data-open]").forEach(el=>el.addE
 /* This week */
 function renderWeek(m){
   const W=D.week,t=iso(today());
-  const ticks=JSON.parse(LS.get("nutmeg.ticks")||"{}");
+  const PR=W.priorities||{},TIERS=[["must","Must do","This week's deadlines and commitments"],["should","Should do","Moves a project forward"],["iftime","If time","Useful, can slip"]];
+  const pItem=x=>`<li class="${x.done?"done":""}"><span class="mark" aria-hidden="true">${x.done?"✓":""}</span><span class="t">${esc(x.text)}${x.done?' <span class="tag">Done</span>':""}</span>${idLink(x.pid)}</li>`;
   const upcoming=D.projects.filter(p=>p.due&&!["Complete","Parked","Backlog","Stopped"].includes(p.status)&&daysTo(p.due)>=-3&&daysTo(p.due)<=42).sort((a,b)=>a.due.localeCompare(b.due));
   const attention=D.projects.filter(p=>ACTIVE.includes(p.status)&&(isBlocked(p)||p.rag==="Red")).sort((a,b)=>isBlocked(b)-isBlocked(a));
   m.innerHTML=`<section class="view">
    <div class="weekhead"><div><div class="eyebrow">Week of</div><h2>${esc(W.label.replace(/^w\/c /,""))}</h2></div>
      <span class="muted">${esc(D.meta.checkin)}</span></div>
-   <div class="focus">${W.focus.map((f,i)=>`<div class="panel"><span class="n">${i+1}</span><div><p>${esc(f.text)}</p><div class="row" style="margin-top:6px">${(f.pids||[]).map(idLink).join(" ")}</div></div></div>`).join("")}</div>
    <div class="days">${W.days.map(d=>`<div class="day ${d.date===t?"today":""} ${d.date<t?"past":""}">
       <div class="dname">${esc(fmtLong(d.date))}</div>
       ${d.items.length?`<ul>${d.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>`:""}
       ${d.note?`<div class="note">${esc(d.note)}</div>`:(!d.items.length?`<div class="note">Nothing logged</div>`:"")}</div>`).join("")}</div>
    <div class="split">
-     <div class="panel"><h2>To do this week</h2>
-       <ul class="todo">${W.todo.map((x,i)=>{const done=x.done||ticks[x.text];return `<li class="${done?"done":""}">
-         <input type="checkbox" id="td${i}" data-t="${esc(x.text)}" ${done?"checked":""} ${x.done?"disabled":""} aria-label="Mark done">
-         <label class="t" for="td${i}">${esc(x.text)}${x.suggested?` <span class="tag">Suggested</span>`:""}</label>${idLink(x.pid)}</li>`}).join("")}</ul>
-       <div class="small-note">Ticks are saved on this device only. Mention them at the Friday check-in so they reach the record.</div></div>
+     <div style="display:grid;gap:16px">
+     <div class="panel"><div class="row" style="justify-content:space-between;margin-bottom:6px"><h2 style="margin:0">Priorities this week</h2><button class="btn" id="cpon">Copy for OneNote</button></div>
+       ${TIERS.map(([k,l,sub])=>(PR[k]||[]).length?`<div class="tier tier-${k}"><div class="tierhead"><span class="tiername">${l}</span><span class="muted">${sub}</span></div><ul class="todo">${PR[k].map(pItem).join("")}</ul></div>`:"").join("")}
+       <div class="small-note">Tick these off in OneNote, not here. Send the week's OneNote page at the Friday check-in and Claude updates this.</div></div>
+     ${(W.ellis||[]).length?`<div class="panel"><h2>Ellis this week</h2><ul class="todo">${W.ellis.map(pItem).join("")}</ul></div>`:""}
+     </div>
      <div style="display:grid;gap:16px">
        <div class="panel"><h2>Needs attention</h2>${attention.length?`<div class="list">${attention.map(p=>`<div class="it" data-open="${p.id}"><span class="when">${esc(p.id)}</span><span><span class="ttl">${esc(p.title)}</span><small>${esc(p.flag||"")}</small></span>${isBlocked(p)?'<span class="pill alert">Blocked</span>':ragPill(p.rag)}</div>`).join("")}</div>`:'<div class="empty">Nothing blocked or red.</div>'}</div>
        <div class="panel"><h2>Coming up</h2>${upcoming.length?`<div class="list">${upcoming.map(p=>{const n=daysTo(p.due);return `<div class="it" data-open="${p.id}"><span class="when">${esc(fmt(p.due))}</span><span><span class="ttl">${esc(p.title)}</span><small>${esc(p.id)} · ${esc(p.owner||"")}</small></span><span class="days-left ${n<=7?"soon":""}">${n<0?`${-n}d ago`:n===0?"today":`${n}d`}</span></div>`}).join("")}</div>`:'<div class="empty">No dated items in the next six weeks.</div>'}</div>
      </div>
    </div></section>`;
-  m.querySelectorAll(".todo input:not([disabled])").forEach(c=>c.onchange=()=>{const tk=JSON.parse(LS.get("nutmeg.ticks")||"{}");if(c.checked)tk[c.dataset.t]=1;else delete tk[c.dataset.t];LS.set("nutmeg.ticks",JSON.stringify(tk));c.closest("li").classList.toggle("done",c.checked)});
+  const cp=m.querySelector("#cpon");
+  if(cp)cp.onclick=()=>{
+    const lines=[];
+    TIERS.forEach(([k,l])=>{const xs=(PR[k]||[]).filter(x=>!x.done);if(xs.length){lines.push(l);xs.forEach(x=>lines.push(x.text+(x.pid?` (${x.pid})`:"")));lines.push("")}});
+    if((W.ellis||[]).length){lines.push("Ellis this week");W.ellis.filter(x=>!x.done).forEach(x=>lines.push(x.text));}
+    copy(lines.join("\n").trim());
+  };
   wireOpen(m);
 }
 
@@ -391,7 +404,8 @@ function briefTeam(){
   const due=D.projects.filter(p=>p.due&&ACTIVE.includes(p.status)&&daysTo(p.due)>=0&&daysTo(p.due)<=14).sort((a,b)=>a.due.localeCompare(b.due));
   const done=D.projects.filter(p=>p.status==="Complete"&&latest(p)&&daysTo(latest(p).date)>=-14);
   return {title:"Team catch-up",sub:W.label,sections:[
-    ["This week's focus",W.focus.map(f=>f.text)],
+    ["Must do this week",((W.priorities||{}).must||[]).filter(x=>!x.done).map(x=>x.text)],
+    ["Ellis this week",(W.ellis||[]).map(x=>x.text)],
     ["To discuss",disc.map(p=>`${p.title} – ${p.rag}${isBlocked(p)?", blocked":""}. ${p.flag||""}`)],
     ["Due in the next two weeks",due.map(p=>`${fmtLong(p.due)} – ${p.title} (${p.owner||"–"})`)],
     ["Recently completed",done.map(p=>p.title)]]};
