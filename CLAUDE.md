@@ -35,8 +35,17 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 
 ## Audiences (learned from the owner)
 - George (GW catch-up): board member. Only very high-level items: strategic decisions, risks that need his weight, resourcing, major milestones. No operational detail (e.g. Football Rebooted data issues) and nothing he has already heard.
-- Energy Services weekly (Mon 8:30): content rules still being learned – ask the owner and record them here.
+- Energy Services weekly (Mon 8:30, formerly "HS weekly"): George's department meeting (field services incl. metering and solar). Only critical, very high-level updates relevant that week – e.g. the strategy launch, events. Plug-in solar is always of interest, at headline level only.
 - Days panel: log only notable, one-off meetings (AI Council, SGG, Football Rebooted, external meetings). Never recurring ones (start/end of week team meetings, ES weekly, PR weekly, George catch-up).
 
 ## Asking questions
 - When the OneNote page has entries that don't match a known project or person, ask what they are before filing them. Ask about possible wins and closed-out items at every check-in.
+
+## What counts as a win
+- Significant achievements with external or senior visibility, or major deliveries: launches, awards, press coverage, big pieces of written work (e.g. the Business South / Daily Echo copy), programme completions.
+- Not admin or bookings. Something booked becomes a win only when it is delivered (e.g. Madeline's final presentation).
+- Big pieces of work often happen in other chats: check past conversations for wins and evidence.
+
+## Context
+- Social Spark is a social-housing solar initiative run by George and Caitlin – not a sustainability team project.
+- Recurring meetings never go on the days panel; monthly LT feedback is the exception and is shown.
