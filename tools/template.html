@@ -155,7 +155,7 @@ dialog.sheet::backdrop{background:rgba(10,20,16,.35)}
 .btn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer}
 .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:13px;z-index:20}
-input[type=date]{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 8px}
+input[type=date],input[type=month]{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 8px}
 
 footer{border-top:1px solid var(--line);padding-block:18px 28px;color:var(--muted);font-size:12px}
 footer .wrap{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center}
@@ -229,7 +229,8 @@ async function boot(){
 }
 
 /* ---------- app ---------- */
-let D,P={},state={view:"week",q:"",theme:"All",group:"Active",rags:new Set(),who:"All",brief:"george",since:null};
+const PILLARS=["Net zero pathway","Fair transition","Data & innovation","Embed in decisions","Supply chain","Team & admin"];
+let D,P={},state={view:"week",q:"",theme:"All",group:"Active",rags:new Set(),who:"All",brief:"george",since:null,month:null};
 const ACTIVE=["In progress","Not started","Ongoing (BAU)"];
 const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
 const parse=s=>{if(!s)return null;const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d||1)};
@@ -245,7 +246,7 @@ const ragPill=r=>`<span class="pill rag-${esc(r)}"><span class="dot"></span>${es
 
 function start(data){
   D=data;D.projects.forEach(p=>P[p.id]=p);
-  const s=new Date(today());s.setDate(s.getDate()-14);state.since=iso(s);
+  const s=new Date(today());s.setDate(s.getDate()-14);state.since=iso(s);state.month=iso(today()).slice(0,7);
   const h=(location.hash||"").slice(1);if(["week","projects","wins","briefs"].includes(h))state.view=h;
   shell();render();
   window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["week","projects","wins","briefs"].includes(v)){state.view=v;render()}});
@@ -325,14 +326,14 @@ function renderWeek(m){
 /* Projects */
 const GROUPS={Active:p=>ACTIVE.includes(p.status),"Parked & backlog":p=>["Parked","Backlog","Stopped"].includes(p.status),Complete:p=>p.status==="Complete",All:()=>true};
 function renderProjects(m){
-  const themes=["All",...new Set(D.projects.map(p=>p.theme).filter(Boolean))];
+  const themes=["All",...PILLARS.filter(t=>D.projects.some(p=>p.theme===t))];
   const counts=Object.fromEntries(Object.keys(GROUPS).map(g=>[g,D.projects.filter(GROUPS[g]).length]));
   const blocked=D.projects.filter(p=>ACTIVE.includes(p.status)&&isBlocked(p)).length;
   m.innerHTML=`<section class="view">
    <div class="stats">${[["Active",counts.Active],["Blocked",blocked],["Complete",counts.Complete],["Parked & backlog",counts["Parked & backlog"]]].map(([l,n])=>`<div class="stat"><b>${n}</b><span>${l}</span></div>`).join("")}</div>
    <div class="toolbar">
      <input type="search" id="q" placeholder="Search projects, updates, people" value="${esc(state.q)}" aria-label="Search">
-     <select id="th" aria-label="Theme">${themes.map(t=>`<option ${t===state.theme?"selected":""}>${esc(t)}</option>`).join("")}</select>
+     <select id="th" aria-label="Strategy pillar">${themes.map(t=>`<option ${t===state.theme?"selected":""}>${esc(t)}</option>`).join("")}</select>
      <div class="seg" role="group" aria-label="Status">${Object.keys(GROUPS).map(g=>`<button data-g="${g}" aria-pressed="${state.group===g}">${g}</button>`).join("")}</div>
      <div class="chips" role="group" aria-label="RAG">${["Red","Amber","Green","Grey"].map(r=>`<button class="chip" data-r="${r}" aria-pressed="${state.rags.has(r)}"><span class="dot ${r}"></span>${r}</button>`).join("")}</div>
    </div>
@@ -420,8 +421,36 @@ function briefTeam(){
     ["Due in the next two weeks",due.map(p=>`${fmtLong(p.due)} – ${p.title} (${p.owner||"–"})`)],
     ["Recently completed",done.map(p=>p.title)]]};
 }
+const NOISE=/^(no change|no progress|parked\.|no update|still parked)/i;
+function inMonth(dt){return dt&&dt.slice(0,7)===state.month}
+function monthLabel(){const [y,m]=state.month.split("-").map(Number);return `${MON[m-1]} ${y}`}
+function pillarOf(pid){return pid&&P[pid]?P[pid].theme:"Fair transition"}
+function briefBoard(){
+  const wins=D.wins.filter(w=>inMonth(w.date));
+  const secs=[["Strategic overview – candidate headlines",wins.map(w=>`${w.title}. ${w.impact||""}`)]];
+  PILLARS.filter(t=>t!=="Team & admin").forEach(t=>{
+    const items=[];
+    D.projects.filter(p=>p.theme===t).forEach(p=>{const us=(p.updates||[]).filter(u=>inMonth(u.date)&&!NOISE.test(u.text));if(us.length&&!["Parked","Backlog"].includes(p.status))items.push(`${p.title} (${p.status}): ${us[0].text}`)});
+    wins.filter(w=>pillarOf(w.pid)===t).forEach(w=>items.unshift(`WIN – ${w.title}`));
+    secs.push([t,items]);
+  });
+  secs.push(["Risks to flag",D.projects.filter(p=>ACTIVE.includes(p.status)&&p.theme!=="Team & admin"&&(isBlocked(p)||p.rag==="Red")).map(p=>`${p.title} – ${p.flag||p.rag}`)]);
+  secs.push(["From your own data",["Carbon intensity per MWh supplied (with year-on-year change)","Emissions table: sites and fleet, adjusted to FY end, target and cost to offset"]]);
+  return {title:`Board report material – ${monthLabel()}`,sub:"Everything logged this month, grouped by strategy pillar. Cut to what the board needs.",sections:secs};
+}
+function briefNews(){
+  const wins=D.wins.filter(w=>inMonth(w.date));
+  const done=D.projects.filter(p=>p.status==="Complete"&&p.theme!=="Team & admin"&&(p.updates||[]).some(u=>inMonth(u.date)));
+  const moving=D.projects.filter(p=>ACTIVE.includes(p.status)&&p.status!=="Ongoing (BAU)"&&p.theme!=="Team & admin"&&p.rag!=="Red"&&!isBlocked(p)&&(p.updates||[]).some(u=>inMonth(u.date)));
+  const soon=D.projects.filter(p=>p.due&&ACTIVE.includes(p.status)&&p.theme!=="Team & admin"&&daysTo(p.due)>=0&&daysTo(p.due)<=42).sort((a,b)=>a.due.localeCompare(b.due));
+  return {title:`Newsletter material – ${monthLabel()}`,sub:"Staff-friendly candidates. Leave out anything commercially sensitive or still awaiting decisions.",sections:[
+    ["Celebrate",wins.map(w=>`${w.title}. ${w.impact||""}`)],
+    ["Delivered this month",done.map(p=>p.title)],
+    ["What's happening",moving.map(p=>`${p.title} (${p.theme})`)],
+    ["Coming up",soon.map(p=>`${fmtLong(p.due)} – ${p.title}`)]]};
+}
 function briefOKR(){
-  const themes=[...new Set(D.projects.map(p=>p.theme).filter(Boolean))];
+  const themes=PILLARS.filter(t=>t!=="Team & admin");
   const secs=[];
   themes.forEach(t=>{
     const ps=D.projects.filter(p=>p.theme===t);
@@ -439,15 +468,16 @@ function briefYear(){
 }
 function briefText(b){return `${b.title}\n${b.sub}\n`+b.sections.map(([h,items])=>`\n${h.toUpperCase()}\n`+(items.length?items.map(i=>`• ${i}`).join("\n"):"• Nothing to report")).join("\n")}
 function renderBriefs(m){
-  const B={george:briefGeorge,team:briefTeam,okr:briefOKR,year:briefYear}[state.brief]();
+  const B={george:briefGeorge,team:briefTeam,board:briefBoard,news:briefNews,okr:briefOKR,year:briefYear}[state.brief]();
   m.innerHTML=`<section class="view">
-   <div class="toolbar"><div class="seg" role="group" aria-label="Brief">${[["george","George 1:1"],["team","Team catch-up"],["okr","OKR material"],["year","Year in review"]].map(([k,l])=>`<button data-b="${k}" aria-pressed="${state.brief===k}">${l}</button>`).join("")}</div>
-   ${state.brief==="george"?`<label class="row muted" for="since">Since <input type="date" id="since" value="${state.since}"></label>`:""}
+   <div class="toolbar"><div class="seg" role="group" aria-label="Brief">${[["george","George 1:1"],["team","Team catch-up"],["board","Board report"],["news","Newsletter"],["okr","OKR material"],["year","Year in review"]].map(([k,l])=>`<button data-b="${k}" aria-pressed="${state.brief===k}">${l}</button>`).join("")}</div>
+   ${state.brief==="george"?`<label class="row muted" for="since">Since <input type="date" id="since" value="${state.since}"></label>`:""}${["board","news"].includes(state.brief)?`<label class="row muted" for="mon">Month <input type="month" id="mon" value="${state.month}"></label>`:""}
    <button class="btn" id="cpb">Copy</button></div>
    <article class="brief"><h3>${esc(B.title)}</h3><p class="muted">${esc(B.sub)}</p>
    ${B.sections.map(([h,items])=>`<h4>${esc(h)}</h4>${items.length?`<ul>${items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>`:'<p class="muted">Nothing to report.</p>'}`).join("")}</article>
    <p class="small-note">Generated from the tracker. For a polished version, ask Claude at the check-in.</p></section>`;
   m.querySelectorAll("[data-b]").forEach(b=>b.onclick=()=>{state.brief=b.dataset.b;renderBriefs(m)});
+  const mo=m.querySelector("#mon");if(mo)mo.onchange=e=>{if(e.target.value){state.month=e.target.value;renderBriefs(m)}};
   const si=m.querySelector("#since");if(si)si.onchange=e=>{if(e.target.value){state.since=e.target.value;renderBriefs(m)}};
   m.querySelector("#cpb").onclick=()=>copy(briefText(B));
 }
@@ -460,7 +490,7 @@ function copy(text){
 }
 const csvCell=v=>{v=v==null?"":String(v);return /[",\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v};
 const csv=rows=>"﻿"+rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
-function projectsCSV(){return csv([["ID","Theme","Project","Status","RAG","Owner","Due","Issue flag","Next steps","Latest update","Last updated","Rationale"],...D.projects.map(p=>{const u=latest(p);return [p.id,p.theme,p.title,p.status,p.rag,p.owner,p.due,p.flag,p.next,u&&u.text,u&&u.date,p.why]})])}
+function projectsCSV(){return csv([["ID","Pillar","Project","Status","RAG","Owner","Due","Issue flag","Next steps","Latest update","Last updated","Rationale"],...D.projects.map(p=>{const u=latest(p);return [p.id,p.theme,p.title,p.status,p.rag,p.owner,p.due,p.flag,p.next,u&&u.text,u&&u.date,p.why]})])}
 function winsCSV(){return csv([["Date","Win","Impact","Evidence","Who","Project"],...D.wins.map(w=>[w.date,w.title,w.impact,w.evidence||"Evidence needed",w.who,w.pid])])}
 async function download(name,text){
   try{if(window.claude&&claude.use){const dl=await claude.use("downloads");if(dl){await dl.save({filename:name,data:new Blob([text],{type:"text/csv"})});return}}}catch(e){toast("Download cancelled");return}

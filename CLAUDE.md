@@ -18,11 +18,11 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 - `meta.updated` – date of the last check-in.
 - `week` – `label`, `days[{date, items[], note}]`, `priorities{must,should,iftime}[{text,pid,done}]`, `added[]` (new tasks mid-week), `ellis[]` + `ellisNote`, `george[]` (GW catch-up points), `esweekly[]` + `esNote` (Energy Services weekly, Mon 8:30), `super6` (weekly reminder text). List items are `{text,pid,done}`.
 - Copy for OneNote follows the owner's OneNote order: Tasks at start of the week, Ellis work this week, GW catch-up, ES Weekly, Super 6.
-- `projects[]` – `id, theme, title, detail, status, rag, flag, owner, due, next, why, decision, updates[{date,status,text}]` (newest first).
+- `projects[]` – `id, theme` (strategy pillar: Net zero pathway | Fair transition | Data & innovation | Embed in decisions | Supply chain | Team & admin; `area` keeps the old grouping), `title, detail, status, rag, flag, owner, due, next, why, decision, updates[{date,status,text}]` (newest first).
 - `wins[]` – `date (YYYY-MM or YYYY-MM-DD), title, impact, evidence|null, who (Ella|Ellis|Team), pid`.
 
 ## Rules
-- RAG ratings change only when the owner says so.
+- Claude may update RAG ratings based on the owner's updates. Always list every RAG change in the check-in summary so she can overrule it.
 - Never tick tasks for the owner from guesswork: completions come from her Friday OneNote screenshot or what she says.
 - Unticked OneNote items carry forward into next week's priorities.
 - Every completed milestone is a candidate win: log impact, and ask for evidence when missing.
@@ -49,3 +49,8 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 ## Context
 - Social Spark is a social-housing solar initiative run by George and Caitlin – not a sustainability team project.
 - Recurring meetings never go on the days panel; monthly LT feedback is the exception and is shown.
+
+## Board report and newsletter
+- The Briefs tab has Board report and Newsletter views for any month, built from that month's updates and wins, grouped by pillar. Pillar columns follow the monthly-sustainability-reporting skill.
+- Before drafting the monthly board paper: check memory and past chats for anything this month not yet in Nutmeg, log it, then pre-fill the skill's input template from Nutmeg. After the board paper is approved, log anything new it contains back into Nutmeg.
+- New projects must be given a pillar.
