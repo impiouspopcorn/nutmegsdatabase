@@ -28,7 +28,9 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 - Every completed milestone is a candidate win: log impact. Wins without evidence show no label (owner's choice, 20 Nov 2026).
 
 ## Drafting next week's priorities (agreed 20 Nov 2026 after errors)
-- Build them only from: unticked OneNote items, items the owner names, and hard deadlines that fall that week. Never carry items from the old Nutmeg list that aren't on OneNote.
+- Build them only from: unticked OneNote items, items the owner names, and hard deadlines that fall that week.
+- Anything on the Nutmeg list that isn't on her OneNote: ask her where it's at. Don't carry it silently and don't drop it silently.
+- Look ahead: at every Monday plan and Friday draft, scan project due dates for the next 2–3 weeks and pull them forward ("Looking ahead: X due …") so she sees them before they arrive.
 - A ticked OneNote item is done. Never turn it into a follow-up (e.g. "send by …") unless she says so.
 - Leave out anything owned by or waiting on someone else (marketing, suppliers, Ellis). That goes in the project's `next` as "Waiting on …".
 - Put work in the week it will actually be done; later work stays in the project's `next` (e.g. a 16 Dec workshop is planned the week before, not now).
