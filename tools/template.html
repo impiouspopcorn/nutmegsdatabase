@@ -408,16 +408,15 @@ function openProject(id){
 /* Wins */
 function renderWins(m){
   const list=D.wins.filter(w=>state.who==="All"||w.who===state.who).slice().sort((a,b)=>b.date.localeCompare(a.date));
-  const need=D.wins.filter(w=>!w.evidence).length;
   const groups={};list.forEach(w=>{const k=w.date.slice(0,7);(groups[k]=groups[k]||[]).push(w)});
   m.innerHTML=`<section class="view">
-   <div class="stats"><div class="stat"><b>${D.wins.length}</b><span>Wins logged</span></div><div class="stat"><b>${need}</b><span>Need evidence</span></div><div class="stat"><b>${D.wins.filter(w=>w.who==="Ella").length}</b><span>Led by Ella</span></div><div class="stat"><b>${D.wins.filter(w=>w.who==="Ellis").length}</b><span>Led by Ellis</span></div></div>
+   <div class="stats"><div class="stat"><b>${D.wins.length}</b><span>Wins logged</span></div><div class="stat"><b>${D.wins.filter(w=>w.who==="Ella").length}</b><span>Led by Ella</span></div><div class="stat"><b>${D.wins.filter(w=>w.who==="Ellis").length}</b><span>Led by Ellis</span></div></div>
    <div class="toolbar"><div class="seg" role="group" aria-label="Who">${["All","Ella","Ellis","Team"].map(w=>`<button data-w="${w}" aria-pressed="${state.who===w}">${w}</button>`).join("")}</div>
    <button class="btn ghost" id="cpw">Copy as text</button></div>
    <div class="wins">${Object.keys(groups).map(k=>`<div class="month"><h3>${esc(fmt(k))}</h3><div class="wingrid">${groups[k].map(w=>`<div class="win">
       <div class="row" style="justify-content:space-between"><span class="mono muted">${esc(w.date.length>7?fmt(w.date):"")}${w.who?` · ${esc(w.who)}`:""}</span>${idLink(w.pid)}</div>
       <div class="t">${esc(w.title)}</div><div class="impact">${esc(w.impact||"")}</div>
-      ${w.evidence?`<div class="ev">Evidence: ${esc(w.evidence)}</div>`:'<span class="pill warn" style="justify-self:start">Evidence needed</span>'}
+      ${w.evidence?`<div class="ev">Evidence: ${esc(w.evidence)}</div>`:''}
    </div>`).join("")}</div></div>`).join("")||'<div class="empty">No wins logged yet.</div>'}</div></section>`;
   m.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{state.who=b.dataset.w;renderWins(m)});
   m.querySelector("#cpw").onclick=()=>copy(list.map(w=>`• ${fmt(w.date)} – ${w.title}. ${w.impact||""}${w.evidence?` (Evidence: ${w.evidence})`:""}`).join("\n"));
@@ -491,7 +490,7 @@ function briefOKR(){
 }
 function briefYear(){
   const ws=D.wins.slice().sort((a,b)=>a.date.localeCompare(b.date));const g={};
-  ws.forEach(w=>{const k=fmt(w.date.slice(0,7));(g[k]=g[k]||[]).push(`${w.title}. ${w.impact||""}${w.evidence?` Evidence: ${w.evidence}.`:" [evidence needed]"}`)});
+  ws.forEach(w=>{const k=fmt(w.date.slice(0,7));(g[k]=g[k]||[]).push(`${w.title}. ${w.impact||""}${w.evidence?` Evidence: ${w.evidence}.`:""}`)});
   return {title:"Year in review",sub:`${ws.length} wins logged`,sections:Object.entries(g)};
 }
 function briefText(b){return `${b.title}\n${b.sub}\n`+b.sections.map(([h,items])=>`\n${h.toUpperCase()}\n`+(items.length?items.map(i=>`• ${i}`).join("\n"):"• Nothing to report")).join("\n")}
@@ -519,7 +518,7 @@ function copy(text){
 const csvCell=v=>{v=v==null?"":String(v);return /[",\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v};
 const csv=rows=>"﻿"+rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
 function projectsCSV(){return csv([["ID","Pillar","Project","Status","RAG","Owner","Due","Issue flag","Next steps","Latest update","Last updated","Rationale"],...D.projects.map(p=>{const u=latest(p);return [p.id,p.theme,p.title,p.status,p.rag,p.owner,p.due,p.flag,p.next,u&&u.text,u&&u.date,p.why]})])}
-function winsCSV(){return csv([["Date","Win","Impact","Evidence","Who","Project"],...D.wins.map(w=>[w.date,w.title,w.impact,w.evidence||"Evidence needed",w.who,w.pid])])}
+function winsCSV(){return csv([["Date","Win","Impact","Evidence","Who","Project"],...D.wins.map(w=>[w.date,w.title,w.impact,w.evidence||"",w.who,w.pid])])}
 async function download(name,text){
   try{if(window.claude&&claude.use){const dl=await claude.use("downloads");if(dl){await dl.save({filename:name,data:new Blob([text],{type:"text/csv"})});return}}}catch(e){toast("Download cancelled");return}
   const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:"text/csv;charset=utf-8"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
