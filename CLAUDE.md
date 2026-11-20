@@ -25,7 +25,17 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 - Claude may update RAG ratings based on the owner's updates. Always list every RAG change in the check-in summary so she can overrule it.
 - Never tick tasks for the owner from guesswork: completions come from her Friday OneNote screenshot or what she says.
 - Unticked OneNote items carry forward into next week's priorities.
-- Every completed milestone is a candidate win: log impact, and ask for evidence when missing.
+- Every completed milestone is a candidate win: log impact. Wins without evidence show no label (owner's choice, 20 Nov 2026).
+
+## Drafting next week's priorities (agreed 20 Nov 2026 after errors)
+- Build them only from: unticked OneNote items, items the owner names, and hard deadlines that fall that week. Never carry items from the old Nutmeg list that aren't on OneNote.
+- A ticked OneNote item is done. Never turn it into a follow-up (e.g. "send by …") unless she says so.
+- Leave out anything owned by or waiting on someone else (marketing, suppliers, Ellis). That goes in the project's `next` as "Waiting on …".
+- Put work in the week it will actually be done; later work stays in the project's `next` (e.g. a 16 Dec workshop is planned the week before, not now).
+- Meetings go on the days panel, not in priorities.
+- Don't link projects or news unless she links them (e.g. the EDF acquisition is company news, not part of plug-in solar).
+- Mark carried items "(carried over)". Label the week "(draft)" and show her the draft priorities in the reply; drop the label once she confirms or at the Monday plan.
+- Project titles must say what the item is now (they show in "Coming up").
 
 ## Weekly rhythm
 - Monday before 8:30: Monday plan – diary, deadlines, what's new. Output: tiered priorities, ES Weekly points, GW catch-up points, proposed asks for Ellis.
