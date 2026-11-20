@@ -319,6 +319,7 @@ function renderWeek(m){
      <div class="panel"><div class="row" style="justify-content:space-between;margin-bottom:6px"><h2 style="margin:0">Priorities this week</h2><button class="btn" id="cpon">Copy for OneNote</button></div>
        ${TIERS.map(([k,l,sub])=>(PR[k]||[]).length?`<div class="tier tier-${k}"><div class="tierhead"><span class="tiername">${l}</span><span class="muted">${sub}</span></div><ul class="todo">${PR[k].map(pItem).join("")}</ul></div>`:"").join("")}
        <div class="small-note">Tick these off in OneNote, not here. Send the week's OneNote page at the Friday check-in and Claude updates this.</div></div>
+     <div class="panel"><h2>Waiting on others</h2>${(W.waiting||[]).length?`<div class="list">${W.waiting.map(x=>{const n=x.since?-daysTo(x.since):null;return `<div class="it"${x.pid?` data-open="${x.pid}"`:""}><span class="when">${esc(x.who||"")}</span><span><span class="ttl">${esc(x.text)}</span><small>${x.pid?esc(x.pid)+" · ":""}${x.since?"since "+esc(fmt(x.since)):""}</small></span>${n!==null&&n>=14?'<span class="pill warn">Chase?</span>':(n!==null?`<span class="days-left">${n}d</span>`:"")}</div>`}).join("")}</div>`:'<div class="empty">Nothing waiting on others.</div>'}<div class="small-note">Your part is done. Flagged "Chase?" after two weeks.</div></div>
      ${(W.added||[]).length?`<div class="panel"><h2>New this week</h2><ul class="todo">${W.added.map(pItem).join("")}</ul></div>`:""}
      <div class="panel"><h2>Ellis this week</h2>${(W.ellis||[]).length?`<ul class="todo">${W.ellis.map(pItem).join("")}</ul>`:""}<div class="small-note">${esc(W.ellisNote||"Confirmed after the Monday 10:00 catch-up.")}</div></div>
      </div>
@@ -336,6 +337,7 @@ function renderWeek(m){
     lines.push("Tasks at start of the week");
     TIERS.forEach(([k,l])=>{const xs=(PR[k]||[]).filter(x=>!x.done);if(xs.length){xs.forEach(x=>lines.push(`[${l}] ${x.text}`))}});
     lines.push("");
+    {const xs=W.waiting||[];if(xs.length){lines.push("Waiting on");xs.forEach(x=>lines.push(`${x.who}: ${x.text}`));lines.push("")}}
     sec("Ellis work this week",W.ellis);
     sec("GW catch-up",W.george);
     sec("ES Weekly",W.esweekly);

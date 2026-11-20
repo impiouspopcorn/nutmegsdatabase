@@ -16,7 +16,7 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 
 ## Data shape (tracker.json)
 - `meta.updated` – date of the last check-in.
-- `week` – `label`, `days[{date, items[], note}]`, `priorities{must,should,iftime}[{text,pid,done}]`, `added[]` (new tasks mid-week), `ellis[]` + `ellisNote`, `george[]` (GW catch-up points), `esweekly[]` + `esNote` (Energy Services weekly, Mon 8:30), `super6` (weekly reminder text). List items are `{text,pid,done}`.
+- `week` – `label`, `days[{date, items[], note}]`, `priorities{must,should,iftime}[{text,pid,done}]`, `added[]` (new tasks mid-week), `ellis[]` + `ellisNote`, `george[]` (GW catch-up points), `esweekly[]` + `esNote` (Energy Services weekly, Mon 8:30), `waiting[]` (see Rules), `super6` (weekly reminder text). List items are `{text,pid,done}`.
 - Copy for OneNote follows the owner's OneNote order: Tasks at start of the week, Ellis work this week, GW catch-up, ES Weekly, Super 6.
 - `projects[]` – `id, theme` (strategy pillar: Net zero pathway | Fair transition | Data & innovation | Embed in decisions | Supply chain | Team & admin; `area` keeps the old grouping), `title, detail, status, rag, flag, owner, due, next, why, decision, updates[{date,status,text}]` (newest first).
 - `wins[]` – `date (YYYY-MM or YYYY-MM-DD), title, impact, evidence|null, who (Ella|Ellis|Team), pid`.
@@ -26,6 +26,8 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 - Never tick tasks for the owner from guesswork: completions come from her Friday OneNote screenshot or what she says.
 - Unticked OneNote items carry forward into next week's priorities.
 - Every completed milestone is a candidate win: log impact. Wins without evidence show no label (owner's choice, 20 Nov 2026).
+- Consolidate wins: one win per achievement. When a new win shares a project or theme with an existing one (e.g. a launch event and its press copy, a survey and its follow-on phase), update the existing win's title, impact, evidence and date rather than adding another.
+- Waiting: `week.waiting[{text, who, since, pid}]` lists items where her part is done and she's waiting on someone else. At every update, move "waiting on…" items here (and out of priorities), remove ones that have landed, and flag any waiting 2+ weeks in the summary so she can chase. The page marks them "Chase?" after 14 days.
 
 ## Drafting next week's priorities (agreed 20 Nov 2026 after errors)
 - Build them only from: unticked OneNote items, items the owner names, and hard deadlines that fall that week.
