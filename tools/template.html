@@ -314,6 +314,8 @@ function renderWeek(m){
       <div class="dname">${esc(fmtLong(d.date))}</div>
       ${d.items.length?`<ul>${d.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ul>`:""}
       ${d.note?`<div class="note">${esc(d.note)}</div>`:(!d.items.length?`<div class="note">Nothing logged</div>`:"")}</div>`).join("")}</div>
+   <div class="panel onkey" style="margin:16px 0"><h2 style="margin:0 0 6px">OneNote key</h2><div class="small-note" style="margin:0;display:flex;flex-wrap:wrap;gap:6px 18px">
+     <span><b>✓ tick</b> done</span><span><b>→</b> progressed, next step</span><span><b>W: who, what</b> waiting on someone</span><span><b>⭐ or WIN:</b> a win (add a number or quote)</span><span><b>dd/mm</b> new deadline or meeting</span><span><b>NEW</b> could be a project</span></div></div>
    <div class="split">
      <div style="display:grid;gap:16px">
      <div class="panel"><div class="row" style="justify-content:space-between;margin-bottom:6px"><h2 style="margin:0">Priorities this week</h2><button class="btn" id="cpon">Copy for OneNote</button></div>

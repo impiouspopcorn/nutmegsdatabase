@@ -53,6 +53,15 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 - Energy Services weekly (Mon 8:30, formerly "HS weekly"): George's department meeting (field services incl. metering and solar). Only critical, very high-level updates relevant that week – e.g. the strategy launch, events. Plug-in solar is always of interest, at headline level only.
 - Days panel: log only notable, one-off meetings (AI Council, SGG, Football Rebooted, external meetings). Never recurring ones (start/end of week team meetings, ES weekly, PR weekly, George catch-up).
 
+## OneNote conventions (agreed 20 Nov 2026; key shown on the This week page)
+- Tick = done. "→ next step" = progressed, not finished: log it as a project update with the new `next`.
+- "W: who, what" = waiting on someone: add to `week.waiting` with who and the date.
+- ⭐ or "WIN:" = a win, ideally with one number or quote as evidence. Consolidate with existing wins where it fits.
+- Dates in dd/mm = new deadline or meeting: set the project `due` or the days panel.
+- "NEW" = could become a project. Only create projects when she marks NEW or says so.
+- Match every OneNote item to an existing project automatically and log it as a dated update on the Projects tab, without her having to flag it. Items that match nothing and aren't NEW stay in OneNote (ask if unclear).
+- The internal and external strategy launches stay separate wins.
+
 ## Asking questions
 - When the OneNote page has entries that don't match a known project or person, ask what they are before filing them. Ask about possible wins and closed-out items at every check-in.
 
