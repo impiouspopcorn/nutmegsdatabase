@@ -303,7 +303,7 @@ function wireOpen(root){root.querySelectorAll("[data-open]").forEach(el=>el.addE
 /* This week */
 function renderWeek(m){
   const W=D.week,t=iso(today());
-  const PR=W.priorities||{},TIERS=[["must","Must do","This week's deadlines and commitments"],["should","Should do","Moves a project forward"],["iftime","If time","Useful, can slip"]];
+  const PR=W.priorities||{},TIERS=[["must","Must do","This week's deadlines and commitments"],["should","Should do","Moves a project forward"],["iftime","If time","Useful this week, can slip"],["ahead","Looking ahead","Deadlines in the next few weeks"]];
   const pItem=x=>`<li class="${x.done?"done":""}"><span class="mark" aria-hidden="true">${x.done?"✓":""}</span><span class="t">${esc(x.text)}${x.done?' <span class="tag">Done</span>':""}</span>${idLink(x.pid)}</li>`;
   const upcoming=D.projects.filter(p=>p.due&&!["Complete","Parked","Backlog","Stopped"].includes(p.status)&&daysTo(p.due)>=-3&&daysTo(p.due)<=42).sort((a,b)=>a.due.localeCompare(b.due));
   const attention=D.projects.filter(p=>ACTIVE.includes(p.status)&&(isBlocked(p)||p.rag==="Red")).sort((a,b)=>isBlocked(b)-isBlocked(a));

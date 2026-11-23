@@ -16,7 +16,7 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 
 ## Data shape (tracker.json)
 - `meta.updated` – date of the last check-in.
-- `week` – `label`, `days[{date, items[], note}]`, `priorities{must,should,iftime}[{text,pid,done}]`, `added[]` (new tasks mid-week), `ellis[]` + `ellisNote`, `george[]` (GW catch-up points), `esweekly[]` + `esNote` (Energy Services weekly, Mon 8:30), `waiting[]` (see Rules), `super6` (weekly reminder text). List items are `{text,pid,done}`.
+- `week` – `label`, `days[{date, items[], note}]`, `priorities{must,should,iftime,ahead}[{text,pid,done}]` (`iftime` = optional work this week only; `ahead` = Looking ahead, its own section), `added[]` (new tasks mid-week), `ellis[]` + `ellisNote`, `george[]` (GW catch-up points), `esweekly[]` + `esNote` (Energy Services weekly, Mon 8:30), `waiting[]` (see Rules), `super6` (weekly reminder text). List items are `{text,pid,done}`.
 - Copy for OneNote follows the owner's OneNote order: Tasks at start of the week, Ellis work this week, GW catch-up, ES Weekly, Super 6.
 - `projects[]` – `id, theme` (strategy pillar: Net zero pathway | Fair transition | Data & innovation | Embed in decisions | Supply chain | Team & admin; `area` keeps the old grouping), `title, detail, status, rag, flag, owner, due, next, why, decision, updates[{date,status,text}]` (newest first).
 - `wins[]` – `date (YYYY-MM or YYYY-MM-DD), title, impact, evidence|null, who (Ella|Ellis|Team), pid`.
@@ -32,7 +32,7 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 ## Drafting next week's priorities (agreed 20 Nov 2026 after errors)
 - Build them only from: unticked OneNote items, items the owner names, and hard deadlines that fall that week.
 - Anything on the Nutmeg list that isn't on her OneNote: ask her where it's at. Don't carry it silently and don't drop it silently.
-- Look ahead: at every Monday plan and Friday draft, scan project due dates for the next 2–3 weeks and pull them forward ("Looking ahead: X due …") so she sees them before they arrive.
+- Look ahead: at every Monday plan and Friday draft, scan project due dates for the next 2–3 weeks and put them in `priorities.ahead` (the Looking ahead section, not under If time) so she sees them before they arrive.
 - An item with a future deadline stays visible every week until it's done, however far away the deadline is: as a priority when it's that week's work, otherwise as "Looking ahead".
 - A ticked OneNote item is done. Never turn it into a follow-up (e.g. "send by …") unless she says so.
 - Leave out anything owned by or waiting on someone else (marketing, suppliers, Ellis). That goes in the project's `next` as "Waiting on …".
