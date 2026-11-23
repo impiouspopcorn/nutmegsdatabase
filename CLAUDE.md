@@ -31,6 +31,8 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 
 ## Drafting next week's priorities (agreed 20 Nov 2026 after errors)
 - Build them only from: unticked OneNote items, items the owner names, and hard deadlines that fall that week.
+- Everything in OneNote's "New tasks (identified throughout the week)" section goes straight into this week's priorities (not `added`); she adds to it during the week and ticks items off there (owner, 23 Nov 2026).
+- Carried-over items (hers or Ellis's) that aren't re-recorded on the new OneNote sheet are never dropped: keep them on the list marked "(carried over)" and ask her their status (owner, 23 Nov 2026).
 - Anything on the Nutmeg list that isn't on her OneNote: ask her where it's at. Don't carry it silently and don't drop it silently.
 - Look ahead: at every Monday plan and Friday draft, scan project due dates for the next 2–3 weeks and put them in `priorities.ahead` (the Looking ahead section, not under If time) so she sees them before they arrive.
 - An item with a future deadline stays visible every week until it's done, however far away the deadline is: as a priority when it's that week's work, otherwise as "Looking ahead".
