@@ -72,7 +72,7 @@ Claude artifact (file `data/tracker.json`); its link is in the owner's project i
 
 ## Context
 - Social Spark is a social-housing solar initiative run by George and Caitlin – not a sustainability team project.
-- Recurring meetings never go on the days panel; monthly LT feedback is the exception and is shown.
+- Recurring meetings never go on the days panel; monthly LT feedback and the EV bi-weekly (owner asked, 23 Nov 2026) are the exceptions and are shown.
 
 ## Board report and newsletter
 - The Briefs tab has Board report and Newsletter views for any month, built from that month's updates and wins, grouped by pillar. Pillar columns follow the monthly-sustainability-reporting skill.
